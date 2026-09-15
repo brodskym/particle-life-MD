@@ -1,0 +1,5 @@
+.mdvenv/
+__pycahce__/
+*.pyc
+*.pyo
+EOF
