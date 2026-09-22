@@ -1,5 +1,7 @@
 import numpy as np
+from numba import njit
 
+@njit(fastmath=True)
 def force_function(positions, types, force_matrix, r_c, grid_length, cell_list, particle_list, no_of_rows):
     N = positions.shape[0]
     total_forces = np.zeros((N, 2), dtype=np.float64)
