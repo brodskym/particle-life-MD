@@ -1,4 +1,6 @@
 import numpy as np
+from vispy import app, scene
+from vispy.color import ColorArray
 from force import force_function
 from build_grid import build_grid
 
@@ -18,9 +20,13 @@ particle_list = np.zeros((N,), dtype=np.int32)
 # Time axis settings
 
 dt = 0.05  
-steps = 100
 
 # Initial conditions - particles
+
+m = 1.0
+gamma = 2.5
+k_B = 1.0 # Boltzman constant in SI k_B = 1.380649e-23 J/K
+T = 0
 
 position = np.random.uniform(low=-grid_length/2, high=grid_length/2, size=(N, 2))
 position = position % grid_length
@@ -54,17 +60,30 @@ force = force_function(
     no_of_rows=no_of_rows
 )
 
-m = 1.0
-gamma = 2.5
-k_B = 1.0 # Boltzman constant in SI k_B = 1.380649e-23 J/K
-T = 0
-
 A = np.exp(-gamma * dt)
 B = np.sqrt((1-A**2) * k_B * T * m)
 
+# --- VISPY SETUP ----
+
+canvas = scene.SceneCanvas(keys='interactive', show=True, size=(800, 800))
+view = canvas.central_widget.add_view()
+
+view.camera = scene.PanZoomCamera(rect=(0, 0, grid_length, grid_length), aspect=1.0)
+
+markers = scene.visuals.Markers(parent=view.scene)
+
+color_palette = np.array([
+    [1.0, 0.2, 0.2, 1.0], # Red
+    [0.2, 1.0, 0.2, 1.0], # Green
+    [0.2, 0.5, 1.0, 1.0], # Blue
+], dtype=np.float32)
+particle_colors = ColorArray(color_palette[type_of_particle])
+
 # Main loop
 
-for step in range(steps):
+def update(ev):
+    global position, momentum, force
+
     momentum += 0.5*force*dt
     position += 0.5*momentum/m*dt
     momentum *= A
@@ -88,7 +107,10 @@ for step in range(steps):
     
     momentum += 0.5*force*dt
 
-    if step % 10 == 0:
-        print(f"t = {step * dt:.2f}")
-        print(f"Position: {position}")
-        print(f"Momentum: {momentum}\n")
+    markers.set_data(pos=position, face_color=particle_colors, size=4, edge_width=0)
+
+timer = app.Timer('auto', connect=update, start=True)
+
+if __name__ == '__main__':
+    app.run()
+
