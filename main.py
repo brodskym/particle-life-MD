@@ -7,17 +7,17 @@ def random_fuction(n):
 
 # Grid dimension
 
-cut_off = 1.5
+cut_off = 2.5
 no_of_rows = 10
 grid_length = no_of_rows * cut_off
-N = 10 # number of particles
+N = 2500 # number of particles
 
 cell_list = np.zeros((no_of_rows**2,), dtype=np.int32)
 particle_list = np.zeros((N,), dtype=np.int32)
 
 # Time axis settings
 
-dt = 1.0  
+dt = 0.05  
 steps = 100
 
 # Initial conditions - particles
@@ -26,12 +26,20 @@ position = np.random.uniform(low=-grid_length/2, high=grid_length/2, size=(N, 2)
 position = position % grid_length
 
 momentum = np.zeros((N,2), dtype=np.float64)
-type_of_particle = np.zeros((N,), dtype=np.int32)
+
+no_of_types = 3
+type_of_particle = np.random.randint(0, no_of_types, size=N, dtype=np.int32)
 
 
 # Initial conditions - forces
 
-force_matrix = np.array([[1.5]], dtype=np.float64)
+force_matrix = np.array(
+                [
+                 [1.5, 1.0, 1.0],
+                 [1.5, -1.2, 1.0],
+                 [1.0, -2.0, -1.0]
+                ]
+                , dtype=np.float64)
 
 build_grid(cell_list, particle_list, N, no_of_rows, position, cut_off)
 
@@ -47,9 +55,9 @@ force = force_function(
 )
 
 m = 1.0
-gamma = 1.0
+gamma = 2.5
 k_B = 1.0 # Boltzman constant in SI k_B = 1.380649e-23 J/K
-T = 1.0
+T = 0
 
 A = np.exp(-gamma * dt)
 B = np.sqrt((1-A**2) * k_B * T * m)
@@ -80,7 +88,7 @@ for step in range(steps):
     
     momentum += 0.5*force*dt
 
-    if step % 2 == 0:
+    if step % 10 == 0:
         print(f"t = {step * dt:.2f}")
         print(f"Position: {position}")
         print(f"Momentum: {momentum}\n")
