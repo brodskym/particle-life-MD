@@ -13,10 +13,10 @@ def random_fuction(n):
 
 # Grid dimension
 
-cut_off = 2.5
-no_of_rows = 10
+cut_off = 5
+no_of_rows = 4 # (number of rows)^2 = number cells
 grid_length = no_of_rows * cut_off
-N = 1000 # number of particles
+N = 2500 # number of particles
 
 cell_list = np.zeros((no_of_rows**2,), dtype=np.int32)
 particle_list = np.zeros((N,), dtype=np.int32)
@@ -31,25 +31,35 @@ m = 1.0
 gamma = 10.0
 k_B = 1.0 # Boltzman constant in SI k_B = 1.380649e-23 J/K
 T = 0
+beta = 2.0 
 
 position = np.random.uniform(low=-grid_length/2, high=grid_length/2, size=(N, 2))
 position = position % grid_length
 
 momentum = np.zeros((N,2), dtype=np.float64)
 
-no_of_types = 3
+no_of_types = 2
 type_of_particle = np.random.randint(0, no_of_types, size=N, dtype=np.int32)
 
 
 # Initial conditions - forces
 
+#force_matrix = np.array(
+#               [
+#                [0.0, 1.0, 1.0],
+#                [1.0, 0.0, 1.0],
+#                 [1.0, 1.0, 0.0]
+#                ]
+#                , dtype=np.float64)
+#
+
 force_matrix = np.array(
-                [
-                 [0.0, 1.0, 1.0],
-                 [1.0, 0.0, 1.0],
-                 [1.0, 1.0, 0.0]
-                ]
+               [
+                [-0.1, 2.5],
+                [2.5, -0.1]
+               ]
                 , dtype=np.float64)
+
 
 build_grid(cell_list, particle_list, N, no_of_rows, position, cut_off)
 
@@ -61,7 +71,8 @@ force = force_function(
     grid_length=grid_length,
     cell_list=cell_list,
     particle_list=particle_list,
-    no_of_rows=no_of_rows
+    no_of_rows=no_of_rows,
+    beta=beta
 )
 
 A = np.exp(-gamma * dt)
@@ -105,7 +116,8 @@ def update(ev):
                 grid_length=grid_length,
                 cell_list=cell_list,
                 particle_list=particle_list,
-                no_of_rows=no_of_rows
+                no_of_rows=no_of_rows,
+                beta=beta
             )
     
     momentum += 0.5*force*dt
