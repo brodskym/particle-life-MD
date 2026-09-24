@@ -9,7 +9,7 @@ class SimulationWindow(QWidget):
         super().__init__()
         self.setWindowTitle("Particle Life")
         
-        self.force_matrix = force_matrix
+        self.force_matrix = -force_matrix
         self.pause_callback = pause_callback
         self.gamma_callback = gamma_callback
         self.is_paused = False

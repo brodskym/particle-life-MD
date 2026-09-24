@@ -14,7 +14,7 @@ def random_function(n):
 class ParticleSimulation:
     def __init__(self):
         # Physics Parameters
-        self.cut_off = 5.0
+        self.cut_off = 10.0
         self.no_of_rows = 4 
         self.grid_length = self.no_of_rows * self.cut_off
         self.N = 2500 # Number of particles
@@ -25,7 +25,7 @@ class ParticleSimulation:
         self.gamma_noise = 0.0
         self.k_B = 1.0
         self.T = 0.0
-        self.beta = 3.0
+        self.beta = 1.0
 
         # State Arrays
         self.cell_list = np.zeros((self.no_of_rows**2,), dtype=np.int32)
@@ -40,8 +40,8 @@ class ParticleSimulation:
         self.type_of_particle = np.random.randint(0, self.no_of_types, size=self.N, dtype=np.int32)
 
         self.force_matrix = np.array([
-            [-0.1, 2.5],
-            [2.5, -0.1]
+            [0, 0],
+            [0, 0]
         ], dtype=np.float64)
 
         # Bootstrap the First Frame
