@@ -4,17 +4,12 @@ from numba import njit
 @njit(fastmath=True)
 def force_type(k, r, beta, r_c):
     if r < beta:
-        # 1. Linear repulsion core (independent of k)
-        # Deeply negative at r=0, tapering to 0 at r=beta
         return 2.0 * (r / beta - 1.0)
     elif r < r_c:
-        # 2 & 3. The V-shape or reversed V-shape
         peak = 0.5 * (beta + r_c)
         if r < peak:
-            # Line from 0 at beta up to k at the peak
             return k * (r - beta) / (peak - beta)
         else:
-            # Line from k at the peak down to 0 at r_c
             return k * (r_c - r) / (r_c - peak)
     return 0.0
 
@@ -48,7 +43,6 @@ def force_function(positions, types, force_matrix, r_c, grid_length, cell_list, 
                                 distance = np.sqrt(dx**2 + dy**2)
                                 
                                 if 0 < distance < r_c:
-                                    # Pass both beta and r_c to the force_type math
                                     force_magnitude_i = force_type(force_matrix[types[p_i], types[p_j]], distance, beta, r_c)
                                     force_magnitude_j = force_type(force_matrix[types[p_j], types[p_i]], distance, beta, r_c)                           
                                     total_forces[p_i, 0] += force_magnitude_i*dx/distance

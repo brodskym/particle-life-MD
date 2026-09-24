@@ -13,11 +13,11 @@ def random_function(n):
 
 class ParticleSimulation:
     def __init__(self):
-        # 1. Physics Parameters
+        # Physics Parameters
         self.cut_off = 5.0
-        self.no_of_rows = 4
+        self.no_of_rows = 4 
         self.grid_length = self.no_of_rows * self.cut_off
-        self.N = 2500
+        self.N = 2500 # Number of particles
 
         self.dt = 0.001
         self.m = 1.0
@@ -26,12 +26,12 @@ class ParticleSimulation:
         self.T = 0.0
         self.beta = 2.0
 
-        # 2. State Arrays
+        # State Arrays
         self.cell_list = np.zeros((self.no_of_rows**2,), dtype=np.int32)
         self.particle_list = np.zeros((self.N,), dtype=np.int32)
         self.momentum = np.zeros((self.N, 2), dtype=np.float64)
 
-        # 3. Initial Conditions
+        #  Initial Conditions
         self.position = np.random.uniform(low=-self.grid_length/2, high=self.grid_length/2, size=(self.N, 2))
         self.position = self.position % self.grid_length
 
@@ -43,7 +43,7 @@ class ParticleSimulation:
             [2.5, -0.1]
         ], dtype=np.float64)
 
-        # 4. Bootstrap the First Frame
+        # Bootstrap the First Frame
         build_grid(self.cell_list, self.particle_list, self.N, self.no_of_rows, self.position, self.cut_off)
         self.force = force_function(
             positions=self.position, types=self.type_of_particle, force_matrix=self.force_matrix,
@@ -51,18 +51,18 @@ class ParticleSimulation:
             particle_list=self.particle_list, no_of_rows=self.no_of_rows, beta=self.beta
         )
 
-        # 5. Integration Constants
+        # Integration Constants
         self.A = np.exp(-self.gamma * self.dt)
         self.B = np.sqrt((1 - self.A**2) * self.k_B * self.T * self.m)
 
-        # 6. Colors (Mapped to the 2 types)
+        # Colors (Mapped to the 2 types)
         color_palette = np.array([
             [1.0, 0.2, 0.2, 1.0], # Red
             [0.2, 1.0, 0.2, 1.0], # Green
         ], dtype=np.float32)
         self.particle_colors = ColorArray(color_palette[self.type_of_particle])
 
-        # 7. Rendering & Timing Variables
+        # Rendering & Timing Variables
         self.window = None
         self.timer = app.Timer('auto', connect=self.update, start=False)
 
@@ -73,7 +73,6 @@ class ParticleSimulation:
             self.timer.start()
 
     def update(self, ev):
-        # BAOAB Integration step (now accessing instance attributes)
         self.momentum += 0.5 * self.force * self.dt
         self.position += 0.5 * self.momentum / self.m * self.dt
         self.momentum *= self.A
@@ -92,7 +91,6 @@ class ParticleSimulation:
         
         self.momentum += 0.5 * self.force * self.dt
 
-        # Push to GPU
         if self.window is not None:
             self.window.markers.set_data(
                 pos=self.position.astype(np.float32), 
@@ -105,10 +103,8 @@ def main():
     app.use_app('pyqt6')
     qt_app = QApplication(sys.argv)
 
-    # Initialize the physics engine
     sim = ParticleSimulation()
     
-    # Pass the toggle_timer callback so the UI Pause button works
     sim.window = SimulationWindow(
         grid_length=sim.grid_length, 
         force_matrix=sim.force_matrix, 
@@ -117,7 +113,6 @@ def main():
     )
     sim.window.show()
     
-    # Start the simulation loop
     sim.timer.start()
 
     app.run()
