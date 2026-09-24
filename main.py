@@ -21,10 +21,11 @@ class ParticleSimulation:
 
         self.dt = 0.001
         self.m = 1.0
-        self.gamma = 10.0
+        self.gamma = 20.0
+        self.gamma_noise = 0.0
         self.k_B = 1.0
         self.T = 0.0
-        self.beta = 2.0
+        self.beta = 3.0
 
         # State Arrays
         self.cell_list = np.zeros((self.no_of_rows**2,), dtype=np.int32)
@@ -53,18 +54,28 @@ class ParticleSimulation:
 
         # Integration Constants
         self.A = np.exp(-self.gamma * self.dt)
+        self.A_2 = np.exp(-self.gamma_noise * self.dt)
         self.B = np.sqrt((1 - self.A**2) * self.k_B * self.T * self.m)
 
         # Colors (Mapped to the 2 types)
-        color_palette = np.array([
+        self.color_palette = np.array([
             [1.0, 0.2, 0.2, 1.0], # Red
             [0.2, 1.0, 0.2, 1.0], # Green
         ], dtype=np.float32)
-        self.particle_colors = ColorArray(color_palette[self.type_of_particle])
+        self.particle_colors = ColorArray(self.color_palette[self.type_of_particle])
 
         # Rendering & Timing Variables
         self.window = None
         self.timer = app.Timer('auto', connect=self.update, start=False)
+    
+    def update_gammas(self, new_gamma, new_gamma_noise):
+        self.gamma = new_gamma
+        self.gamma_noise = new_gamma_noise
+        
+        self.A = np.exp(-self.gamma * self.dt)
+        self.A_2 = np.exp(-self.gamma_noise * self.dt)
+        
+        self.B = np.sqrt((1 - self.A**2) * self.k_B * self.T * self.m)
 
     def toggle_timer(self, is_paused):
         if is_paused:
@@ -75,7 +86,7 @@ class ParticleSimulation:
     def update(self, ev):
         self.momentum += 0.5 * self.force * self.dt
         self.position += 0.5 * self.momentum / self.m * self.dt
-        self.momentum *= self.A
+        self.momentum *= self.A * self.A_2
         self.momentum += self.B * random_function(self.N)
         self.position += 0.5 * self.momentum / self.m * self.dt
 
@@ -109,8 +120,13 @@ def main():
         grid_length=sim.grid_length, 
         force_matrix=sim.force_matrix, 
         no_of_types=sim.no_of_types,
-        pause_callback=sim.toggle_timer
+        pause_callback=sim.toggle_timer,
+        color_palette=sim.color_palette,
+        gamma_init=sim.gamma,             
+        gamma_noise_init=sim.gamma_noise, 
+        gamma_callback=sim.update_gammas  
     )
+
     sim.window.show()
     
     sim.timer.start()

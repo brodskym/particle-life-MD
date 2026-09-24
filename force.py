@@ -43,8 +43,8 @@ def force_function(positions, types, force_matrix, r_c, grid_length, cell_list, 
                                 distance = np.sqrt(dx**2 + dy**2)
                                 
                                 if 0 < distance < r_c:
-                                    force_magnitude_i = force_type(force_matrix[types[p_i], types[p_j]], distance, beta, r_c)
-                                    force_magnitude_j = force_type(force_matrix[types[p_j], types[p_i]], distance, beta, r_c)                           
+                                    force_magnitude_i = -force_type(force_matrix[types[p_i], types[p_j]], distance, beta, r_c)
+                                    force_magnitude_j = -force_type(force_matrix[types[p_j], types[p_i]], distance, beta, r_c)                           
                                     total_forces[p_i, 0] += force_magnitude_i*dx/distance
                                     total_forces[p_i, 1] += force_magnitude_i*dy/distance
 
