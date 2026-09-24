@@ -1,17 +1,20 @@
-import numpy as np
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QDoubleSpinBox
+import os
+from datetime import datetime
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QDoubleSpinBox, QPushButton
 from vispy import scene
+from vispy.io import write_png
 
 class SimulationWindow(QWidget):
-    def __init__(self, grid_length, force_matrix, no_of_types):
+    # Added pause_callback to the init parameters
+    def __init__(self, grid_length, force_matrix, no_of_types, pause_callback):
         super().__init__()
         self.setWindowTitle("Particle Life")
         
         self.force_matrix = force_matrix
+        self.pause_callback = pause_callback
+        self.is_paused = False
         
-        # Change to Vertical Layout: Canvas on top, UI on bottom
         main_layout = QVBoxLayout()
-        # Remove margins around the canvas to give it absolute maximum space
         main_layout.setContentsMargins(0, 0, 0, 10) 
         self.setLayout(main_layout)
 
@@ -21,7 +24,6 @@ class SimulationWindow(QWidget):
         self.view.camera = scene.PanZoomCamera(rect=(0, 0, grid_length, grid_length), aspect=1.0)
         self.markers = scene.visuals.Markers(parent=self.view.scene)
         
-        # Add the canvas to the layout with a stretch factor of 1 so it consumes all extra space
         main_layout.addWidget(self.canvas.native, 1)
         
         # 2. Interactive UI Panel Setup
@@ -29,10 +31,24 @@ class SimulationWindow(QWidget):
         bottom_layout = QHBoxLayout()
         ui_panel.setLayout(bottom_layout)
         
-        # Inner widget just for the grid to keep it compact
+        # --- NEW: Action Buttons ---
+        btn_layout = QVBoxLayout()
+        
+        self.pause_btn = QPushButton("Pause")
+        self.pause_btn.clicked.connect(self.toggle_pause)
+        
+        self.pic_btn = QPushButton("Take Picture")
+        self.pic_btn.clicked.connect(self.take_picture)
+        
+        btn_layout.addWidget(self.pause_btn)
+        btn_layout.addWidget(self.pic_btn)
+        
+        bottom_layout.addLayout(btn_layout)
+        # ---------------------------
+
         grid_widget = QWidget()
         grid_layout = QGridLayout()
-        grid_layout.setContentsMargins(0, 0, 0, 0)
+        grid_layout.setContentsMargins(20, 0, 20, 0) # Give the grid some breathing room
         grid_widget.setLayout(grid_layout)
         
         for i in range(no_of_types):
@@ -41,16 +57,12 @@ class SimulationWindow(QWidget):
                 box.setRange(-10.0, 10.0)
                 box.setSingleStep(0.1)
                 box.setValue(self.force_matrix[i, j])
-                
-                # Force the boxes to be physically smaller so they don't bloat the bottom panel
                 box.setFixedWidth(60)
-                
                 box.valueChanged.connect(lambda val, r=i, c=j: self.update_force(val, r, c))
                 
                 grid_layout.addWidget(QLabel(f"{i}→{j}:"), i, j*2)
                 grid_layout.addWidget(box, i, j*2 + 1)
                 
-        # Pushes the grid to the center of the bottom panel
         bottom_layout.addStretch()
         bottom_layout.addWidget(grid_widget)
         bottom_layout.addStretch()
@@ -59,3 +71,16 @@ class SimulationWindow(QWidget):
         
     def update_force(self, val, r, c):
         self.force_matrix[r, c] = val
+
+    def toggle_pause(self):
+        self.is_paused = not self.is_paused
+        self.pause_btn.setText("Play" if self.is_paused else "Pause")
+        self.pause_callback(self.is_paused)
+
+    def take_picture(self):
+        os.makedirs("screenshots", exist_ok=True)
+        img = self.canvas.render()
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"screenshots/sim_{timestamp}.png"
+        write_png(filename, img)
+        print(f"Simulation saved to {filename}")
