@@ -25,7 +25,7 @@ class ParticleSimulation:
         self.gamma = 10.0
         self.gamma_noise = 0.0
         self.k_B = 1.0
-        self.T = 0.0
+        self.T = 1.0
         self.beta = 1.0
 
         # State Arrays
@@ -40,7 +40,7 @@ class ParticleSimulation:
         self.no_of_types = 3
         self.type_of_particle = np.random.randint(0, self.no_of_types, size=self.N, dtype=np.int32)
         
-        self.force_matrix = spiral_galaxy_interaction_matrix
+        self.force_matrix = slime_interaction_matrix
 
         #self.force_matrix = np.array([
         #   [0.4,  -0.8,  -0.1],
@@ -58,7 +58,7 @@ class ParticleSimulation:
 
         # Integration Constants
         self.A = np.exp(-self.gamma * self.dt)
-        self.A_2 = np.exp(-self.gamma_noise * self.dt)
+        self.A_2 = np.exp(self.gamma_noise * self.dt)
         self.B = np.sqrt((1 - self.A**2) * self.k_B * self.T * self.m)
 
         # Colors (Mapped to the 2 types)

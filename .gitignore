@@ -4,5 +4,6 @@ __pycahce__/
 *.pyo
 pyrightconfig.json
 screenshots
+graphs
 *.png
 EOF
