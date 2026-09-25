@@ -58,7 +58,7 @@ class ParticleSimulation:
 
         # Integration Constants
         self.A = np.exp(-self.gamma * self.dt)
-        self.A_2 = np.exp(self.gamma_noise * self.dt)
+        self.A_2 = np.exp(-self.gamma_noise * self.dt)
         self.B = np.sqrt((1 - self.A**2) * self.k_B * self.T * self.m)
 
         # Colors (Mapped to the 2 types)
