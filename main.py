@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QApplication
 from force import force_function
 from build_grid import build_grid
 from ui import SimulationWindow
+from force_matrix_suggestions import cell_interaction_matrix, slime_interaction_matrix, snake_interaction_matrix, spiral_galaxy_interaction_matrix
 
 def random_function(n):
     return np.random.normal(0, 1.0, size=(n, 2))
@@ -21,7 +22,7 @@ class ParticleSimulation:
 
         self.dt = 0.001
         self.m = 1.0
-        self.gamma = 20.0
+        self.gamma = 10.0
         self.gamma_noise = 0.0
         self.k_B = 1.0
         self.T = 0.0
@@ -36,13 +37,16 @@ class ParticleSimulation:
         self.position = np.random.uniform(low=-self.grid_length/2, high=self.grid_length/2, size=(self.N, 2))
         self.position = self.position % self.grid_length
 
-        self.no_of_types = 2
+        self.no_of_types = 3
         self.type_of_particle = np.random.randint(0, self.no_of_types, size=self.N, dtype=np.int32)
+        
+        self.force_matrix = spiral_galaxy_interaction_matrix
 
-        self.force_matrix = np.array([
-            [0, 0],
-            [0, 0]
-        ], dtype=np.float64)
+        #self.force_matrix = np.array([
+        #   [0.4,  -0.8,  -0.1],
+        #    [ -0.7, 1.0, -0.7],
+        #    [ 0.6, -0.2, 0.1]
+        #], dtype=np.float64)
 
         # Bootstrap the First Frame
         build_grid(self.cell_list, self.particle_list, self.N, self.no_of_rows, self.position, self.cut_off)
@@ -61,6 +65,7 @@ class ParticleSimulation:
         self.color_palette = np.array([
             [1.0, 0.2, 0.2, 1.0], # Red
             [0.2, 1.0, 0.2, 1.0], # Green
+            [0.2, 0.5, 1.0, 1.0], # Blue
         ], dtype=np.float32)
         self.particle_colors = ColorArray(self.color_palette[self.type_of_particle])
 
